@@ -1,0 +1,705 @@
+<?php
+//error_reporting(E_ALL);
+//ini_set("display_errors", 1);
+
+$GLOBALS['DEBUGGING'] = False;
+
+
+include_once 'pronunc_quality_conf.php';
+include_once 'functions/getheader.php';
+include_once 'functions/cleanlistenername.php';
+include_once 'functions/filefunctions.php';
+include_once 'functions/safeshuffle.php';
+
+
+
+
+# Handle first the preparations, then render page accordingly;
+# Has this listener evaluated something already?
+
+$listener=cleanlistener($_GET["listener"]);
+$sentencelist;
+
+$wkey=cleanlistener($_GET["wkey"]);
+
+if ($GLOBALS['DEBUGGING'] == True) {
+    print "<pre>";
+    print_r ($_POST);
+    print_r ($_GET);
+    print "</pre>";
+}
+
+
+
+if ($listener) {
+
+    if ( isset( $_GET["gender"] ) ) {
+        $listenerstatfile=getstatfiledir($resultdir).$listener ."_stats";
+        $fh = fopen($listenerstatfile, 'w');
+        fwrite($fh,"listener: ".$_GET["listener"]."\n" );
+        fwrite($fh,"gender: ".$_GET["gender"]."\n" );
+        fwrite($fh,"agegroup: ".$_GET["agegroup"]."\n" );
+        fwrite($fh,"langgroup: ".$_GET["langgroup"]."\n" );
+        fclose($fh);
+
+    }
+
+    if ( isset( $_POST["submissiontag"] ) ) {
+
+# If POST includes evaluation results, we'll write them to disk
+
+        writeresults($resultdir, $listener, $_POST);
+
+    }
+
+# The order of the samples is randomised for each listener,
+# and the random order is saved in a file.
+
+    $orderfile= getorderfiledir($resultdir).$listener ."_". $personalorderfile;
+
+    if ( ! file_exists(  $orderfile ) ) {
+
+# if there is no order file for this listener, then we need to create it:
+
+# Generate the list of sentences for the listener to evaluate;
+# Do this by shuffling the sentence list with the checksum of the
+# listener email/nickname:
+
+        $sentencelist=range(1001,1000+count($filekey),1);
+
+# srand(crc32($listener));
+        #
+# In many php installations random functions are disabled for security
+# reasons.
+        #
+# SEOshuffle function provides shuffling functionality based on a seed
+        #
+        SEOshuffle($sentencelist, crc32($listener));
+
+        $fh = fopen($orderfile, 'w');
+        foreach ($sentencelist as $n) {
+            fwrite($fh, $filekey["$n"]."\n");
+        }
+        fclose($fh);
+    }
+
+    $fh = fopen($orderfile, 'r');
+    $samples=array();
+    $alreadyevaluated=0;
+
+    while( count($samples) < $samplesperpage &  count($samples)+$alreadyevaluated <  $requiredevaluations ) {
+
+        $sample=trim(fgets($fh));
+
+        if ($sample) {
+            if (checklistenerresults($resultdir, $listener, $sample )) {
+                if (checkresults($resultdir, $sample) + checklocks($resultdir, $sample,$listener,$allowedtime) < $min_evals) {
+                    makelock($resultdir, $sample, $listener);
+                    array_push($samples,trim($sample));
+                }
+            }
+            else {
+                $alreadyevaluated++;
+            }
+
+        }
+
+        else break;
+    }
+
+    fclose($fh);
+
+    $samplesonthispage=count($samples);
+
+}
+
+print getheader();
+
+
+if ($GLOBALS['DEBUGGING']) {
+    print "<pre>";
+    print_r($_POST);
+    print "</pre>";
+}
+
+
+#######      Entry page    #######################
+
+
+// We'll check first if we have an email or not:
+
+if (!$listener) {
+
+    // Check if the database exists:
+    //print sqlite_libversion();
+    //$dbhandle = sqlite_open($dbfile, 0666, $error);
+
+
+    print "<div class=divmain> ";
+
+
+    print phpversion();
+    print "<br>";
+    try {
+        $db->exec('.tables');
+
+    }
+    catch (Exception $e)  {
+        print "something goes wrong";
+        }
+    print "<p>";
+
+
+    print "$introduction
+   <br><br>
+   <div class=divlistenerinfo >
+   <h3><a href=\"#\" onclick=\"returninglistener.hidden=true;newlistener.hidden=false;\">New listener</a></h3>
+   <div  id=newlistener hidden>
+   <p>
+
+   Your identifier: <br> (For example email address or nickname;<br> Must contain at least 4 alphanumeric characters)<br>
+   
+   <form name=\"ff0\" method=get action=$testurl>
+    <input id=listenername type=text name=listener oninput=\"checkForm()\">
+    <div id=listenerwarning></div><br>
+    Gender:<br>
+    <input id=r1 type=\"radio\" name=gender value=\"f\" onClick=\"checkForm()\">Female
+    <input id=r2 type=\"radio\" name=gender value=\"m\" onClick=\"checkForm()\">Male
+    <input id=r3 type=\"radio\" name=gender value=\"o\" onClick=\"checkForm()\">Other/unspecified
+    <br><br>
+    Age: <br>
+    <select id=ageselect name=agegroup  onchange=\"checkForm()\">
+    <option name=zero value=zero default> please select... </option>";
+    foreach ($agegroups as $arr) {
+        print "<option name=".$arr["val"]." value=".$arr["val"]."> ".$arr["label"]." </option>";
+    };
+
+    print "</select>
+    <br><br>
+    English language background:<br> 
+    <select id=langselect name=langgroup  onchange=\"checkForm()\">
+    <option name=zero value=zero default> please select... </option>";
+
+    foreach ($languagebackground as $arr) {
+        print "<option name=".$arr["val"]." value=".$arr["val"]."> ".$arr["label"]." </option>";
+    };
+
+    print "</select>
+    <br><br> 
+
+   <input id=submitbutton0 type=submit disabled>    </form> 
+   </div>
+   </div>
+   <br>
+   <div class=divlistenerinfo >
+   <h3><a href=\"#\" onclick=\"returninglistener.hidden=false;newlistener.hidden=true;\">Returning listener</a></h3>
+   <div  id=returninglistener hidden>
+<p>
+    Your email address or nickname:<br>
+
+    <form name=\"ff2\" method=get action=$testurl>
+       <input id=returninglistenername type=text name=listener oninput=\"checkForm()\"><br><br>
+       <input id=submitbutton1 type=submit disabled>    </form> 
+    </div>
+    </div>
+<p>$visitortext
+ </div>
+
+
+
+ <script type=\"text/JavaScript\">
+
+var xmlhttp;
+xmlhttp=new XMLHttpRequest();
+var listenersort;
+
+ function checkForm() {
+
+  listenerstatus=checklistener(listenername.value);
+
+   if (listenerstatus==\"old\") 
+   { 
+    listenerwarning.innerHTML=\"Nickname \"+listenername.value+\" taken\";
+   }
+   else listenerwarning.innerHTML=\"\";
+
+
+  if ( (r1.checked || r2.checked || r3.checked ) && (ageselect.value != \"zero\") && (langselect.value != \"zero\" )  && listenerstatus == \"new\")
+  {
+   submitbutton0.disabled=false;
+  }
+   else
+  {
+   submitbutton0.disabled=true;
+  }
+  if (checklistener(returninglistenername.value) == \"old\") 
+  {
+   submitbutton1.disabled=false;
+  }
+   else
+  {
+   submitbutton1.disabled=true;
+  }
+ }
+
+ function checklistener(lisname) {
+
+   name=lisname.replace(/\W/g,'');
+
+   if (name.length > 3) 
+   {
+    xmlhttp.open(\"GET\",\"${usercheckurl}?listener=\"+name ,false);
+    xmlhttp.send();
+    return xmlhttp.responseText;
+   }
+   else { return false; }
+ }
+ </script> ";
+
+
+}
+
+#######      Word selection page    #######################
+
+elseif (!$wkey)  {
+
+    print " <p>select sample
+            <p>";
+
+    print "<table><tr>";
+    $ct=-1;
+    foreach ($words as $arr) {
+        if ($ct++%4==3) {
+            print "</tr><tr>";
+        }
+
+        print "<td>".sprintf("%03u",($ct+1))." <a href=\"${testurl}?wkey=".sprintf("%03u",($ct+1))."&word=".$arr["word"]."&listener=$listener\">".$arr["word"]."</a></td>";
+
+    }
+    print "</tr></table>";
+}
+
+#######      Test page    #######################
+
+
+else {
+//    if ($alreadyevaluated >= $requiredevaluations) {
+//	print "<p>Well done! That's all. Thank you.";
+//    }
+//    elseif ( $samplesonthispage == 0 ) {
+//	print "<p>We seem to have enough repetitions on samples already, so we do not need further input from you. ";
+//	if ($alreadyevaluated > 0)
+//	    print "<p>Thank you for the $alreadyevaluated samples that you evaluated!";
+//	else
+//	    print "<p>Thank you for your interest though!";
+//    }
+//    else
+    {
+
+        #$listenerdir=cleanlistener($listener);
+
+        $testurl.="?listener=${listener}";
+
+
+        print "<div class=divmain>";
+
+        if ( $alreadyevaluated > 0 ) {
+            print "<p>You have already evaluated $alreadyevaluated out of $requiredevaluations sentences. Thank you for that</p>
+<p>Below you will find another set of sentences synthesised using a low quality synthesis system.
+</p>";
+        }
+
+
+
+
+
+
+
+        else {
+            print "<p>Below you will find audio sample from a reference speaker and some amateur attempts to utter that same word,
+either freely or imitating the audio sample.
+
+<ul>
+ <li>Please select the overall quality of the pronunciation on a scale of 1 (worst) to 5 (best).</li>
+ <li>For some words there are several allowed pronunciations. You can point out the
+ pronunciation variant by clicking on it. If the audio bears no resemblance to any of the pronunciations, you can select \"other\". </li>
+  <li> You can also mark parts of the word where the pronunciation goes
+  <span style='background-color:greenyellow'>right (default)</span>,
+  <span style='background-color:yellow'>slightly wrong</span>   or
+  <span style='background-color:orangered'> completely wrong</span>
+ by clicking on the phoneme. Clicking on a phoneme will cycle the categories: <span class=goodphone>f</span>
+  &#8658; <span class=badphone>f</span> &#8658; <span class=realbadphone>f</span> &#8658; <span class=goodphone>f</span>
+  </li>
+  </ul>
+
+
+";
+        }
+
+
+        $intro = "<p>
+Please listen to them and mark which ones are unacceptably bad
+and need to improved, and categorise the most obvious problem in those sentences. After rating the utterances submit your answers with the submit button.";
+
+        print "</p>";
+
+        print "<p>";
+        print "<form name=\"ff1\" method=\"post\"  action=\"$testurl\" onsubmit=\"beforeSubmit();\">";
+
+        print "<datalist id=numbers>
+	        <option>1</option>
+	        <option>2</option>
+	        <option>3</option>
+	        <option>4</option>
+	        <option>5</option>
+        </datalist>";
+
+
+        print "Current word: ".$words[$wkey]["word"];
+
+        print "<table align=center><tr><td colspan=2></td><td>Overall quality</td><td>Pronunciation variants</td></tr>";
+        $n=0;
+
+        foreach ($speakers as $sp) {
+            $n++;
+            print "<tr class=samplerow><td>$n</td><td width=45><audio id=\"audio_$n\" src=wav/$sp/".$words[$wkey]["file"].".wav onended=enable_playbutton_$n() ></audio>";
+
+            print "<button type=button id=\"playbutton_$n\" onclick=\"playing_$n()\"> &#9658; play </button> </td>";
+
+//            print "<td><select id=evalselect_$n name=eval_$n size=1 onchange=\"validateForm_$n();\">
+//<option name=zero value=zero default> please select... </option>
+//<option name=$n.1 value=$n.1 disabled> 5: perfect </option>
+//<option name=$n.2 value=$n.2 disabled> 4 </option>
+//<option name=$n.3 value=$n.3  disabled> 3 </option>
+//<option name=$n.4 value=$n.4  disabled> 2 </option>
+//<option name=$n.5 value=$n.5  disabled> 1: Terrible </option>
+//</select></td>";
+
+            print "<td>
+<table><tr><td>1</td><td align=middle>2</td><td align=middle>3</td><td align=middle>4</td><td align=right>5</td></tr><tr><td colspan=5><input type=range list=numbers min=1 max=5 /></td></tr></table>
+</td>";
+
+            print "<td>
+                   ";
+
+
+            $nn=0;
+            foreach ($words[$wkey]["phonemes"] as $phonearray) {
+                #print_r($phonearray);
+                if (++$nn == 1)
+                    $checked = "checked=\"checked\"";
+                else
+                    $checked = "";
+                $radioid=$words[$wkey]["file"]."_".$sp;
+                print "\n<span class=\"passivepronunciation\" id=\"${radioid}_pr${nn}\">$nn<input type=\"radio\" id=\"".$words[$wkey]["file"]."_".$sp."_pr${nn}_radio\" name=\"".$words[$wkey]["file"]."_".$sp."_radio\" value=\"$radioid_pr$nn\" onclick='activatepronunciation(\"$radioid\",\"${radioid}_pr${nn}_ph1\")'/>";
+                $nnn=0;
+                foreach ($phonearray as $phone) {
+                    $nnn++;
+                    $id=$words[$wkey]["file"]."_".$sp."_pr${nn}_ph$nnn";
+                    print "\n<span id=\"$id\" class=\"passivephone\" onclick='cyclecolor(\"$radioid\",\"$id\")'>". $phone."</span>";
+
+                }
+
+                print "</span>";
+            }
+            $radioid=$words[$wkey]["file"]."_".$sp;
+            $id=$words[$wkey]["file"]."_".$sp."_pr".++${nn}."_ph1";
+            print "\n<span class=passivepronunciation id=\"${radioid}_pr${nn}\" >$nn<input type=\"radio\" id=\"".$words[$wkey]["file"]."_".$sp."_pr${nn}_radio\" name=\"".$words[$wkey]["file"]."_".$sp."_radio\"  onclick='activatepronunciation(\"$radioid\",\"${radioid}_pr${nn}_ph1\")' />
+                    <span  id=\"$id\" class=\"passivephone\" onclick='cyclecolor(\"$radioid\",\"$id\")'>Other</span> </span>";
+
+            print "</span>";
+
+            print "</td>";
+
+            print "</tr>";
+
+
+        }
+        print "</table>";
+
+        print $intro;
+
+
+
+
+#	print "<form name=\"ff1\" method=\"post\"  action=\"$testurl\" onsubmit=\"beforeSubmit();\">";
+
+        print "<table>";
+        print "<tr><th></th><th>Sample</th><th>Quality</th></tr>";
+
+
+
+        $first=true;
+#	foreach ($samples as $n) {
+#	    $wavfile="audiosamples/roger_$n.wav";
+
+#print "<tr><td>$n</td><td><audio id=\"audio_$n\" src=$wavfile controls width=0 hidden onplay=\"document.ff1.eval_$n.disabled=false;\" ></audio>";
+//	    print "<tr><td>$n</td><td width=45><audio id=\"audio_$n\" src=$wavfile onended=enable_playbuttons() ></audio>";
+//
+//	    print "<button type=button id=\"playbutton_$n\" onclick=\"playing_$n()\"> &#9658; play </button> </td>";
+//
+//	    print "<td><select id=evalselect_$n name=eval_$n size=1 onchange=\"validateForm_$n();\">
+//<option name=zero value=zero default> please select... </option>
+//<option name=$n.2 value=$n.2 disabled> Ok: Quality is good </option>
+//<option name=$n.3 value=$n.3 disabled> Ok: It's not great but it will do </option>
+//<option name=$n.4 value=$n.4  disabled> Not ok: Mispronunciation of word(s) </option>
+//<option name=$n.5 value=$n.5  disabled> Not ok: Incomprehensible segments </option>
+//<option name=$n.6 value=$n.6  disabled> Not ok: Bad rhytmh or intonation </option>
+//<option name=$n.7 value=$n.7  disabled> Not ok: Bad audio quality (artifacts etc) </option>
+//</select></td>
+//</tr>";
+#	}
+
+        print "</table>";
+        print "<p align=center>";
+        print "<input type=hidden name=submissiontag value=submitted>";
+        print "<input type=hidden name=timePassed value=0>";
+        print "<input type=submit name=submitbutton disabled></form>";
+
+        print "
+<p id=changeableText>
+
+<font color=#cc0000>You have rated 0 utterances (".($samplesonthispage)." required)<!-- of which <br>
+0 utterances as adequate (1-".($samplesonthispage-1)." required) and <br>
+0 utterances as requiring improvement (1-".($samplesonthispage-1)." required).--></font>
+
+</p>
+<p>$breaktext</p>
+";
+
+#    print "</td></tr></table>";
+        print "</div>";
+
+
+        print "\n\n<script type=\"text/JavaScript\">
+
+var green=\"<font color=#00cc00>\";
+var red=\"<font color=#cc0000>\";
+var endgreen=\"</font>\";
+var endred=\"</font>\";
+
+function validateForm() {
+  var no=0;var yes=0;
+";
+
+
+        foreach ($samples as $n) {
+            print "
+  if (document.ff1.eval_$n.value != \"zero\")   { yes++; };";
+
+        }
+        print "
+
+  rated=\"You have rated \"+(yes)+\" utterances ($samplesonthispage required) \";
+
+  if (yes==$samplesonthispage) {rated=green+rated+endgreen;} else {rated=red+rated+endred;}
+
+  if (yes==$samplesonthispage) {
+    document.getElementById('changeableText').innerHTML=rated+\"<br>\"+green+
+       \"Please press submit to save your evaluations!\"+endgreen;
+    activateSubmit();
+    return true;
+  } 
+  else {
+    document.getElementById('changeableText').innerHTML=rated+\"<br>\";
+    deactivateSubmit();
+    return false;
+  }
+}
+
+
+function activateSubmit() {
+  document.ff1.submitbutton.disabled=false;
+}
+
+function deactivateSubmit() {
+  document.ff1.submitbutton.disabled=true;
+}
+
+
+
+var timePassed=0;
+var myVar=setInterval(function(){myTimer()},1000);
+
+function myTimer()
+{
+ timePassed++;
+ document.ff1.timePassed.value=timePassed;
+}
+";
+        $n=0;
+        foreach ($speakers as $sp) {
+            $n++;
+            print "
+//////////// Sample $n handling /////////////////
+
+var playstamps_$n = new Array();
+var answerstamps_$n = new Array();
+
+function validateForm_$n() {
+   answerstamps_$n.push( ( new Date().getTime() -loadstamp )/1000);
+   validateForm();
+}
+
+function playing_$n() {
+   if (audio_$n.currentTime != 0) {
+    audio_$n.pause();
+    audio_$n.currentTime = 0;
+    enable_playbutton_$n() ;
+   }
+   else {
+     audio_$n.play();
+     playstamps_$n.push( (new Date().getTime() -loadstamp)/1000);
+     //disable_playbuttons();
+     playbutton_$n.innerHTML=\" <font color=#00cc00>&#8718; stop</font> \";
+     playbutton_$n.disabled=false;
+     enable_selections_$n();
+  }
+}
+function enable_playbutton_$n() {
+   playbutton_$n.disabled=false;
+   audio_$n.currentTime = 0;
+   playbutton_$n.innerHTML=\"&#9658; play \";
+   }
+
+function enable_selections_$n() {
+   for(var i=0; i<evalselect_$n.length; i++) {
+     evalselect_$n.options[i].disabled = false;
+   }
+}
+
+";
+    }
+    print "\n\n
+
+    function activatepronunciation(\$radioid, \$id) {
+
+        document.getElementById( document.getElementById(\$id).parentNode.id + '_radio').click();
+
+        var \$n=1;
+        //alert('checking '+\$radioid+'_'+\$n);
+        while ( !!document.getElementById(\$radioid+'_pr'+\$n) ) {
+            document.getElementById(\$radioid+'_pr'+\$n).className=\"passivepronunciation\";
+            \$nn=1;
+                //alert('checking '+\$radioid+'_pr'+\$n+'_ph'+\$nn);
+                while ( !!document.getElementById(\$radioid+'_pr'+\$n+'_ph'+\$nn) ) {
+                    document.getElementById(\$radioid+'_pr'+\$n+'_ph'+\$nn).className=\"passivephone\";
+                    \$nn++;
+                }
+            \$n++;
+
+        }
+        document.getElementById(\$id).parentNode.className = \"activepronunciation\";
+        var \$n = 1;
+        var \$parentid = document.getElementById(\$id).parentNode.id;
+        //alert( 'what is' +  \$parentid );
+        //alert('checking '+ document.getElementById( \$parentid +'_ph'+\$n ).id);
+        while ( !!document.getElementById(  \$parentid +'_ph'+\$n )) {
+             document.getElementById( \$parentid +'_ph'+\$n).className =\"goodphone\";
+             \$n++;
+        }
+
+
+    }
+
+    function cyclecolor(\$radioid, \$id) {
+        //alert (document.getElementById(\$id).parentNode.className);
+        //alert('TTrying to find'+ document.getElementById(\$id).parentNode.id + '_radio');
+
+        if (document.getElementById(\$id).parentNode.className == \"passivepronunciation\") {
+            activatepronunciation(\$radioid, \$id);
+
+        }
+
+
+        else {
+            if (document.getElementById(\$id).className == \"goodphone\") {
+                document.getElementById(\$id).className = \"badphone\";
+            }
+            else {
+                if (document.getElementById(\$id).className == \"badphone\") {
+                    document.getElementById(\$id).className = \"realbadphone\";
+                }
+                else if (document.getElementById(\$id).className == \"realbadphone\") {
+                    document.getElementById(\$id).className = \"goodphone\";
+                }
+            }
+        }
+    }
+    ";
+
+
+
+    print "
+function disable_playbuttons() {
+";
+    $n=0;
+    foreach ($speakers as $foo) {
+        $n++;
+        print "
+   playbutton_$n.disabled=true;";
+    }
+    print "}
+
+    loadstamp=new Date().getTime();
+
+    function beforeSubmit () {
+
+        ";
+
+	foreach ($samples as $n) {
+	    print "
+    for (key in playstamps_$n) {
+            var myin = document.createElement(\"input\");
+       myin.type='hidden';
+       myin.name='sample_${n}_listenstamps_'+(key);
+       myin.value=playstamps_${n}[key];
+       document.ff1.appendChild(myin);
+   }
+
+    for (key in answerstamps_$n) {
+       var myin = document.createElement(\"input\");
+       myin.type='hidden';
+       myin.name='sample_${n}_answerstamps_'+(key);
+       myin.value=answerstamps_${n}[key];
+       document.ff1.appendChild(myin);
+   }
+   var myin = document.createElement(\"input\");
+   myin.type='hidden';
+   myin.name='pageloadstamp';
+   myin.value=loadstamp;
+   document.ff1.appendChild(myin);
+
+";
+
+	}
+	print "
+
+
+    document.ff1.submit();
+    return false;
+}
+</script>
+";
+
+
+
+    }
+
+}
+
+print "<div class=spacer> </div>";
+
+print "
+<div class=divfooter>
+<p class=divfooterp>$footertext
+Last update to script: ".date('F d Y h:i A P T e', filemtime('pronunc_quality_test.php'));
+print "</p></div>";
+
+print "</body></hmtl>";
+
+
+
+
+
+?>
