@@ -26,19 +26,19 @@ include_once '../pronunc_quality_conf.php';
 //print_r($_GET);
 //print "</pre>";
 
-$listener=$_GET["listener_id"];
+$listener=sqlite_escape_string($_GET["listener_id"]);
 
-$speaker=$_GET["speaker_id"];
+$speaker=sqlite_escape_string($_GET["speaker_id"]);
 
-$word=$_GET["word_id"];
+$word=sqlite_escape_string($_GET["word_id"]);
 
-$pronunc_variant=$_GET["pronunc"];
+$pronunc_variant=sqlite_escape_string($_GET["pronunc"]);
 
-$word_phoneme=$_GET["word_phoneme"];
+$word_phoneme=sqlite_escape_string($_GET["word_phoneme"]);
 
-$error_type=$_GET["error_type"];
+$error_type=sqlite_escape_string($_GET["error_type"]);
 
-$error_detail=$_GET["error_detail"];
+$error_detail=sqlite_escape_string($_GET["error_detail"]);
 
 $timestamp=date('Y-m-d h:i:s', time());
 

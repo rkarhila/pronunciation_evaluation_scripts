@@ -10,16 +10,16 @@
 include_once '../pronunc_quality_conf.php';
 
 // print "<pre>";
-// print_r($_GET);
+// print_r(sqlite_escape_string($_GET));
 // print "</pre>";
 
-$listener=$_GET["listener_id"];
+$listener=sqlite_escape_string($_GET["listener_id"]);
 
-$speaker=$_GET["speaker_id"];
+$speaker=sqlite_escape_string($_GET["speaker_id"]);
 
-$word=$_GET["word_id"];
+$word=sqlite_escape_string($_GET["word_id"]);
 
-$pronunc_variant=$_GET["pronunc"];
+$pronunc_variant=sqlite_escape_string($_GET["pronunc"]);
 
 $timestamp=date('Y-m-d h:i:s', time());
 
