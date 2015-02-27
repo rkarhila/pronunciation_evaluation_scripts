@@ -13,13 +13,13 @@ print "<pre>";
 print_r($_GET);
 print "</pre>";
 
-$listener=sqlite_escape_string($_GET["listener_id"]);
+$listener=SQLite3::escapeString($_GET["listener_id"]);
 
-$speaker=sqlite_escape_string($_GET["speaker_id"]);
+$speaker=SQLite3::escapeString($_GET["speaker_id"]);
 
-$word=sqlite_escape_string($_GET["word_id"]);
+$word=SQLite3::escapeString($_GET["word_id"]);
 
-$rating=sqlite_escape_string($_GET["rating"]);
+$rating=SQLite3::escapeString($_GET["rating"]);
 
 #$pronuncn_variant=$_POST["pronunciation_id"];
 #$phones=$_POST["phones"];

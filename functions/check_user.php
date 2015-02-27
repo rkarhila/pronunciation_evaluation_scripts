@@ -2,7 +2,7 @@
 
 include_once '../pronunc_quality_conf.php';
 
-$listener=cleanlistener(sqlite_escape_string($_GET["listener"]));
+$listener=cleanlistener(SQLite3::escapeString($_GET["listener"]));
 
 $sqlcommand="SELECT l_id from listeners where name='$listener';";
 

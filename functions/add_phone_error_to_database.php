@@ -26,19 +26,19 @@ include_once '../pronunc_quality_conf.php';
 //print_r($_GET);
 //print "</pre>";
 
-$listener=sqlite_escape_string($_GET["listener_id"]);
+$listener=SQLite3::escapeString($_GET["listener_id"]);
 
-$speaker=sqlite_escape_string($_GET["speaker_id"]);
+$speaker=SQLite3::escapeString($_GET["speaker_id"]);
 
-$word=sqlite_escape_string($_GET["word_id"]);
+$word=SQLite3::escapeString($_GET["word_id"]);
 
-$pronunc_variant=sqlite_escape_string($_GET["pronunc"]);
+$pronunc_variant=SQLite3::escapeString($_GET["pronunc"]);
 
-$word_phoneme=sqlite_escape_string($_GET["word_phoneme"]);
+$word_phoneme=SQLite3::escapeString($_GET["word_phoneme"]);
 
-$error_type=sqlite_escape_string($_GET["error_type"]);
+$error_type=SQLite3::escapeString($_GET["error_type"]);
 
-$error_detail=sqlite_escape_string($_GET["error_detail"]);
+$error_detail=SQLite3::escapeString($_GET["error_detail"]);
 
 $timestamp=date('Y-m-d h:i:s', time());
 
