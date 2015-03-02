@@ -62,7 +62,7 @@ else {
 
 $trying=$db->exec($sqlcommand);
 
-print $sqlcommand."<br>";
+#print $sqlcommand."<br>";
 
 if ($trying)
     print 1;

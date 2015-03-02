@@ -69,9 +69,9 @@ if ($GLOBALS['DEBUGGING']) {
     print "<pre>";
     print_r($_POST);
     print "</pre>";
+    print "<div id=logging style='position: absolute;left: 2px;top: 2px; z-index: 100;background-color: bisque;opacity: 0.8;filter: alpha(opacity=80);font-size: x-small'>".  "PHP version ".phpversion()."<br></div>";
 }
 
-print "<div id=logging style='position: absolute;left: 2px;top: 2px; z-index: 100;background-color: bisque;opacity: 0.8;filter: alpha(opacity=80);font-size: x-small'>".  "PHP version ".phpversion()."<br></div>";
 
 
 
@@ -291,6 +291,7 @@ either freely or imitating the audio sample.
 
 <ul>
  <li>Please select the overall quality of the pronunciation on a scale of 1 (worst) to 5 (best).</li>
+  <li>All evaluations are immediately sent to the server. No form submissions are necessary.</li>
  <li>For some words there are several allowed pronunciations. You can point out the
  pronunciation variant by clicking on it. If the audio bears no resemblance to any of the pronunciations, you can select \"other\". </li>
   <li> You can also mark parts of the word where the pronunciation goes

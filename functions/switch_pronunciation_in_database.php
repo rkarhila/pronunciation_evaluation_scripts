@@ -39,7 +39,7 @@ else {
 
 }
 
-print $sqlcommand."<br>";
+#print $sqlcommand."<br>";
 
 
 $trying=$db->exec($sqlcommand);

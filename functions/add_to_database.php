@@ -42,7 +42,7 @@ $trying=$db->exec($sqlcommand);
 if ($trying)
     print $rating;
 else {
-    print $sqlcommand;
+    print "0";#$sqlcommand;
 }
 
 

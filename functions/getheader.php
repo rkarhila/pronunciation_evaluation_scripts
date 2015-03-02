@@ -137,7 +137,7 @@ margin: 8px 0;
 
 .activepronunciation {
     /*     top  right bottom left                  */
-    padding:8px 2px 8px 8px;
+    padding:8px 2px 22px 8px;
     margin:5px;
     border: 1px dotted;
     background-color:#ffffff;
@@ -145,7 +145,7 @@ margin: 8px 0;
 
 .passivepronunciation {
     /*     top  right bottom left                  */
-    padding:8px 2px 8px 8px;
+    padding:8px 2px 22px 8px;
     margin:5px;
     border: 1px dotted;
     background-color:#dddddd;
@@ -170,7 +170,8 @@ margin: 8px 0;
 
 
 .goodphone {
-    padding:3px;
+    /*     top  right bottom left                  */
+    padding:3px 5px 16px 5px;
     margin:3px;
     border: 1px dotted;
     background-color:greenyellow;
@@ -180,10 +181,15 @@ margin: 8px 0;
   -ms-user-select: none;      /* IE 10+ */
   -o-user-select: none;
   user-select: none;
+
+    background-image: url('images/thumb_upup.png');
+    background-repeat: no-repeat;
+    background-position: bottom;
 }
 
+
 .badphone {
-    padding:3px;
+    padding:3px 5px 16px 5px;
     margin:3px;
     border: 1px dotted;
     background-color:yellow;
@@ -193,10 +199,14 @@ margin: 8px 0;
   -ms-user-select: none;      /* IE 10+ */
   -o-user-select: none;
   user-select: none;
+
+    background-image: url('images/thumb_side.png');
+    background-repeat: no-repeat;
+    background-position: bottom;
 }
 
 .realbadphone {
-    padding:3px;
+    padding:3px 5px 16px 5px;
     margin:3px;
     border: 1px dotted;
     background-color:orangered;
@@ -206,6 +216,10 @@ margin: 8px 0;
   -ms-user-select: none;      /* IE 10+ */
   -o-user-select: none;
   user-select: none;
+
+      background-image: url('images/thumb_down.png');
+    background-repeat: no-repeat;
+    background-position: bottom;
 }
 
 
