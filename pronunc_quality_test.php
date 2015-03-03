@@ -473,7 +473,7 @@ either freely or imitating the audio sample.
                     }else {
                         $phoneclass='passivephone';
                     }
-                    print "\n<span id='$phoneid' class='$phoneclass' onclick=\"cyclecolor('$radioid','$phoneid','$speaker','$pronunc_id', '$nnn');\">" . $phone . "</span>";
+                    print "\n<span id='$phoneid' class='$phoneclass' onclick=\"cyclecolor('$radioid','$phoneid','$speaker','$pronunc_id', '$nnn');\">" . $phonememap[$phone] . "</span>";
 
                 }
 

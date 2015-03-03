@@ -11,6 +11,7 @@ function getheader() {
     return "<HTML>
 <HEADER>
 <TITLE> Test on selecting sentences to training data pool  </TITLE>
+<META charset='UTF-8'>
 <STYLE TYPE=\"text/css\">
    <!--
 body {  font-family: Arial, Helvetica, sans-serif;
@@ -156,7 +157,7 @@ margin: 8px 0;
 
 
 .passivephone {
-    padding:3px;
+    padding:3px 5px 16px 5px;
     margin:3px;
     border: 1px dotted;
     cursor: pointer;
