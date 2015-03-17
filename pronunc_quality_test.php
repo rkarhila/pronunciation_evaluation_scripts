@@ -118,7 +118,7 @@ if (!$listener) {
 
     print "</select>
     <br><br>
-    English language background:<br> 
+    Choose the option that best describes your current English language background:<br>
     <select id=langselect name=langgroup  onchange='checkForm()'>
     <option name=zero value=zero default> please select... </option>";
 
@@ -209,10 +209,11 @@ elseif (!$wkey) {
     print " <p>select sample
             <p>";
 
-    print "<table><tr>";
+    print "<table><th colspan=11 bgcolor='#ffdddd'>The interesting words:</th>";
+    print "<tr>";
     $ct = -1;
 
-    $sqlcommand = "SELECT * FROM words;";
+    $sqlcommand = "SELECT * FROM words WHERE interesting=1;";
 
     $queryres = $db->query($sqlcommand);
     #$foo = $queryres->fetcharray();
@@ -270,7 +271,74 @@ elseif (!$wkey) {
         print "</td><td width=50>&nbsp;</td>";
         }
     }
+    print "</tr>";
+
+
+    print "<th colspan=11 bgcolor='#ffdddd'>The not so interesting words:</th>";
+    print "<tr>";
+    $ct = -1;
+
+    $sqlcommand = "SELECT * FROM words WHERE interesting=0;";
+
+    $queryres = $db->query($sqlcommand);
+    #$foo = $queryres->fetcharray();
+
+
+    $dd=0;
+    while ($arr = $queryres->fetcharray()) {
+
+        if ($dd++ < 145) {
+
+            $word = $arr['word'];
+            $wkey = $arr['w_id'];
+
+
+            # Put the words in three columns ie. switch row after every 3 items displayed
+            if ($ct++ % 4 == 3) {
+                print "</tr><tr>";
+            }
+
+            print "<td>" . sprintf("%03u", ($wkey)) . " <a href='${testurl}?wkey=$wkey&word=$word&listener=$listener'>$word</a></td>";
+
+            print "<td>";
+
+            $sqlcommand = "SELECT count(*) FROM evaluations WHERE word='$wkey' AND listener='$listener_id' AND evaluation>0;";
+            //print "<br>$sqlcommand";
+            try {
+                $num_evals = $db->querySingle($sqlcommand);
+            } catch (Exception $exception) {
+                print $exception->getMessage();
+            }
+            $sqlcommand = "SELECT count(*) FROM speakers_words WHERE word='$wkey';";
+            //print "<br>$sqlcommand";
+            try {
+                $num_spoken = $db->querySingle($sqlcommand);
+            } catch (Exception $exception) {
+                print $exception->getMessage();
+            }
+
+            //print $num_evals . "/" . $num_spoken;
+
+            if ($num_spoken > 0) {
+                $done_bar = floor(50 * $num_evals / $num_spoken);
+                //print "floor(50 * $num_evals / $num_spoken) = $done_bar";
+                $to_be_done_bar = 50 - $done_bar;
+                print "<table border=1 margin=0 cellspacing=0 cellpadding=0><tr>";
+                if ($done_bar > 0) {
+                    print "<td width=$done_bar bgcolor='#98fb98'>&nbsp;</td>";
+                }
+                if ($to_be_done_bar > 0) {
+                    print "<td width=$to_be_done_bar>&nbsp;</td>";
+                }
+
+                print "</tr></table>";
+            }
+            print "</td><td width=50>&nbsp;</td>";
+        }
+    }
     print "</tr></table>";
+
+
 }
 
 #######      Test page    #######################
@@ -286,11 +354,15 @@ else {
     print "<div class=divmain>";
 
 
-    print "<p>Below you will find audio sample from a reference speaker and some amateur attempts to utter that same word,
-either freely or imitating the audio sample.
+    print "<p>Below you will find audio samples from a reference speaker and some amateurs attempting
+to utter the same word either freely or by imitating an audio sample.
 
+<p>
+Please evaluate the quality of pronunciation for each sound file as follows:
 <ul>
- <li>Please select the overall quality of the pronunciation on a scale of 1 (worst) to 5 (best).</li>
+
+<li> In the column <b>Overall quality</b>, please select the overall quality of pronunciation on a scale of 1 (worst) to 5 (best).</li>
+ <!--<li>Please select the overall quality of the pronunciation on a scale of 1 (worst) to 5 (best).</li>
   <li>All evaluations are immediately sent to the server. No form submissions are necessary.</li>
  <li>For some words there are several allowed pronunciations. You can point out the
  pronunciation variant by clicking on it. If the audio bears no resemblance to any of the pronunciations, you can select \"other\". </li>
@@ -300,7 +372,18 @@ either freely or imitating the audio sample.
   <span style='background-color:orangered'> completely wrong</span>
  by clicking on the phoneme. Clicking on a phoneme will cycle the categories: <span class=goodphone>f</span>
   &#8658; <span class=badphone>f</span> &#8658; <span class=realbadphone>f</span> &#8658; <span class=goodphone>f</span>
-  </li>
+  </li>-->
+  <li>In the column <b>Pronunciation variant</b>, you can indicate the parts of the word where the pronunciation quality is
+   <span style='background-color:greenyellow'>correct (default)</span>,
+  <span style='background-color:yellow'>slightly wrong</span>   or
+  <span style='background-color:orangered'> completely wrong</span>
+  by clicking on the phoneme (written in phonetic alphabet), such as ʃ, θ or iː. Clicking on a phoneme will cycle through the three categories:
+  <span class=goodphone>f</span>
+  &#8658; <span class=badphone>f</span> &#8658; <span class=realbadphone>f</span> &#8658; <span class=goodphone>f</span><br><br>
+<li> Some words can be pronounced in  several different ways. However, if you feel that the audio does not resemble
+enough the correct pronunciation, you can select <b>other</b> in the Pronunciation variant column.
+</li>
+<li>All evaluations are immediately sent to the server. Therefore, you need not separately submit the survey form.</li>
   </ul>
 
 
@@ -352,7 +435,7 @@ either freely or imitating the audio sample.
     // Add the zero pronunciation option:
     array_push($phonearrays, Array('pronunc' => Array('Other'), 'id' => "-1"));
 
-    $sqlcommand = "SELECT * FROM speakers_words WHERE word='$wkey';";
+    $sqlcommand = "SELECT * FROM speakers_words WHERE word='$wkey' ORDER BY RANDOM();";
 
     $queryres = $db->query($sqlcommand);
     #$foo = $queryres->fetcharray();
@@ -540,7 +623,7 @@ either freely or imitating the audio sample.
 
 
 
-    print "<p><a href=".$testurl.">Return to word selection page</a></p>";
+    print "<p align=\"center\"><a href=".$testurl.">Return to word selection page</a></p>";
 
     print "</div>";
 

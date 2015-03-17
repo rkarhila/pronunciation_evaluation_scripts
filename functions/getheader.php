@@ -231,10 +231,11 @@ margin: 8px 0;
 <BODY>
 
 <p align=right>
-<img src=images/edin_crest.png>
-<img src=images/cstr3.png height=80>
+<!--<img src=images/edin_crest.png>
+<img src=images/cstr3.png height=80>-->
+<img src=images/hy_pa_engelska.png height=80>
 <img src=images/Aalto_ELEC_EN_21_CMYK_3.PNG height=80>
-<img src=images/s4a21-300x115.png height=80>
+<img src=images/siak.png height=80>
 </p>
 <br><br>
 
