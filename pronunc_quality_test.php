@@ -206,10 +206,17 @@ var listenersort;
 
 elseif (!$wkey) {
 
-    print " <p>select sample
-            <p>";
 
-    print "<table><th colspan=11 bgcolor='#ffdddd'>The interesting words:</th>";
+
+    print "<table>";
+    print "<tr><td colspan=11>
+            <p>Select sample to evaluate from the list below. Please start with the 16 so-called interesting words.
+            <p>If you are feeling bored and have already finished watching the paint dry and done with reading the phone book,
+            you can also evaluate some of the other words.
+            <br><br>
+            </td></tr>";
+
+    print "<th colspan=11 bgcolor='#ffdddd'>The interesting words:</th>";
     print "<tr>";
     $ct = -1;
 
