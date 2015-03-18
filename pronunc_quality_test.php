@@ -213,6 +213,7 @@ elseif (!$wkey) {
             <p>Select sample to evaluate from the list below. Please start with the 16 so-called interesting words.
             <p>If you are feeling bored and have already finished watching the paint dry and done with reading the phone book,
             you can also evaluate some of the other words.
+            <p>You can quit the test at any time and return later with your identifier (<i>$listener</i>).
             <br><br>
             </td></tr>";
 
@@ -384,7 +385,8 @@ Please evaluate the quality of pronunciation for each sound file as follows:
    <span style='background-color:greenyellow'>correct (default)</span>,
   <span style='background-color:yellow'>slightly wrong</span>   or
   <span style='background-color:orangered'> completely wrong</span>
-  by clicking on the phoneme (written in phonetic alphabet), such as ʃ, θ or iː. Clicking on a phoneme will cycle through the three categories:
+  by clicking on the phoneme (written in <a href='http://upload.wikimedia.org/wikipedia/en/8/8f/IPA_chart_%28C%292005.pdf'>phonetic alphabet (pdf)</a>),
+   such as ʃ, θ or iː. Clicking on a phoneme will cycle through the three categories:
   <span class=goodphone>f</span>
   &#8658; <span class=badphone>f</span> &#8658; <span class=realbadphone>f</span> &#8658; <span class=goodphone>f</span><br><br>
 <li> Some words can be pronounced in  several different ways. However, if you feel that the audio does not resemble
@@ -442,7 +444,7 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
     // Add the zero pronunciation option:
     array_push($phonearrays, Array('pronunc' => Array('Other'), 'id' => "-1"));
 
-    $sqlcommand = "SELECT * FROM speakers_words WHERE word='$wkey' ORDER BY RANDOM();";
+    $sqlcommand = "SELECT * FROM speakers_words WHERE word='$wkey';"; # ORDER BY RANDOM();";
 
     $queryres = $db->query($sqlcommand);
     #$foo = $queryres->fetcharray();
@@ -464,7 +466,7 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
             $filename = $arr['filename'];
             $speaker = $arr['speaker'];
 
-            print "<tr class=samplerow><td>$n</td><td width=45><audio id='audio_$n' src=$filename onended='enable_playbutton_$n();' ></audio>";
+            print "<tr class=samplerow><td>".$arr['speaker']." </td><td width=45><audio id='audio_$n' src=$filename onended='enable_playbutton_$n();' ></audio>";
 
             print "<button type=button id='playbutton_$n' onclick='playing_$n()'> &#9658; play </button> </td>";
 
