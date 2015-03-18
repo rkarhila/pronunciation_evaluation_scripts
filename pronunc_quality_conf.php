@@ -3,10 +3,12 @@
 # These are the truly local settings:
 #Include information about the URL where test is run:
 
-$base_url="http://localhost:8008/";
+#$base_url="http://localhost:8008/";
+$base_url="http://spa1.org.aalto.fi/Sites/pronunciation_evaluation/";
 
 # and where is the database file for the results:
-$dbfile="/l/rkarhila/scratch/PhpstormProjects/SIAK_subjective_pronunciation_scoring_test/db/pronunc.db";
+#$dbfile="/l/rkarhila/scratch/PhpstormProjects/SIAK_subjective_pronunciation_scoring_test/db/pronunc.db";
+$dbfile="/var/www/db/pronunc.db";
 
 
 # Path for saving results; Obviously read/write permissions are required for this:
