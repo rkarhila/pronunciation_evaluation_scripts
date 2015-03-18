@@ -68,10 +68,9 @@ $introduction="
     <ul>
    <li>To keep track which utterances you've evaluated already, you are asked to provide a unique identifier.
    <li> You can do the test at your own pace, returning to it later with your identifier.
-   <li> More instructions should be written, but not too many.
 </ul>";
 
-$visitortext="If you don't want to participate in the test but are curious how it is done, <a href=\"sampletestpage.html\"> click here for a sample page.</a>
+$visitortext="If you don't want to participate in the test but are curious how it is done, <a href=\"$testurl?wkey=7&word=that&listener=test\"> click here for a sample page.</a>
 
 ";
 
@@ -469,6 +468,9 @@ CREATE TABLE phone_error
 //    $speakers=Array(
 //        "heikki_apina",
 //        "heikki_oma", ...
+
+    # Add a test user:
+    $sqlcommand.="INSERT INTO listeners (name, gender, age, language_bg, timestamp) VALUES ('test','0','0','0','0');\n";
 
     $sqlcommand.="COMMIT;";
     print "<pre>$sqlcommand </pre>";

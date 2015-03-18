@@ -42,33 +42,36 @@ $error_detail=SQLite3::escapeString($_GET["error_detail"]);
 
 $timestamp=date('Y-m-d h:i:s', time());
 
+if ($listener == 1) {
+    print 1;
+}
+else {
 
 
 // $sqlcommand="INSERT INTO phone_error (speaker, word, listener, pronunc_variant, word_phoneme, error_type, error_detail, timestamp) ";
 // $sqlcommand.=  "VALUES ('$speaker', '$word', '$listener','$pronunc_variant', '$word_phoneme', '$error_type', '$error_detail','$timestamp'); ";
 
 
-$sqlcommand ="SELECT count(*) FROM phone_error WHERE word='$word' AND listener='$listener' AND speaker='$speaker' AND word_phoneme='$word_phoneme';";
-if ($db->querySingle($sqlcommand) > 0) {
-    $sqlcommand ="UPDATE phone_error SET error_type='$error_type',error_detail='$error_detail',timestamp='$timestamp' ";
-    $sqlcommand.="WHERE word='$word' AND listener='$listener' AND speaker='$speaker' AND word_phoneme='$word_phoneme'";
+    $sqlcommand = "SELECT count(*) FROM phone_error WHERE word='$word' AND listener='$listener' AND speaker='$speaker' AND word_phoneme='$word_phoneme';";
+    if ($db->querySingle($sqlcommand) > 0) {
+        $sqlcommand = "UPDATE phone_error SET error_type='$error_type',error_detail='$error_detail',timestamp='$timestamp' ";
+        $sqlcommand .= "WHERE word='$word' AND listener='$listener' AND speaker='$speaker' AND word_phoneme='$word_phoneme'";
 
-}
-else {
-    $sqlcommand ="INSERT INTO phone_error (speaker, word, listener, pronunc_variant, word_phoneme, error_type, error_detail, timestamp) ";
-    $sqlcommand.="VALUES ('$speaker', '$word', '$listener', '$pronunc_variant', '$word_phoneme', '$error_type','$error_detail','$timestamp'); ";
-}
+    } else {
+        $sqlcommand = "INSERT INTO phone_error (speaker, word, listener, pronunc_variant, word_phoneme, error_type, error_detail, timestamp) ";
+        $sqlcommand .= "VALUES ('$speaker', '$word', '$listener', '$pronunc_variant', '$word_phoneme', '$error_type','$error_detail','$timestamp'); ";
+    }
 
 
-$trying=$db->exec($sqlcommand);
+    $trying = $db->exec($sqlcommand);
 
 #print $sqlcommand."<br>";
 
-if ($trying)
-    print 1;
-else
-    print 0;
+    if ($trying)
+        print 1;
+    else
+        print 0;
 
-$db->close();
-
+    $db->close();
+}
 ?>
