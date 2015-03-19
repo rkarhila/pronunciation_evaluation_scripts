@@ -419,7 +419,7 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
 
     print "Current word: " . $word;
 
-    print "<table align=center><tr><td colspan=2></td><td>Overall quality</td><td>Pronunciation variants</td></tr>";
+    print "<table align=center>";
     $n = 0;
 
 
@@ -444,173 +444,189 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
     // Add the zero pronunciation option:
     array_push($phonearrays, Array('pronunc' => Array('Other'), 'id' => "-1"));
 
-    $sqlcommand = "SELECT * FROM speakers_words WHERE word='$wkey';"; # ORDER BY RANDOM();";
+    $sqlcommand = "SELECT S.* FROM speakers_words S WHERE S.word='$wkey' AND S.speaker in (select s_id from speakers where interesting=1) ORDER BY RANDOM();";
+    $queryres1 = $db->query($sqlcommand);
 
-    $queryres = $db->query($sqlcommand);
+    $sqlcommand = "SELECT S.* FROM speakers_words S WHERE S.word='$wkey' AND S.speaker in (select s_id from speakers where interesting=0) ORDER BY RANDOM();";
+    $queryres2 = $db->query($sqlcommand);
+
+    $sqlcommand = "SELECT S.* FROM speakers_words S WHERE S.word='$wkey' AND S.speaker in (select s_id from speakers where interesting=-1) ORDER BY RANDOM();";
+    $queryres3 = $db->query($sqlcommand);
+
+    $queryress = Array($queryres1,$queryres2,$queryres3);
+    $tableheader=Array("Speakers of primary interest", "Speakers of secondary interest", "Speakers of less interest");
     #$foo = $queryres->fetcharray();
 
     $javascript = "";
 
     //$dd=0;
-    while ($arr = $queryres->fetcharray()) {
-
-        ++$n;
-//
-//        if ($n < 4) {
-        if (true) {
-
-            $radioid = "word" . $wkey . "_speaker" . $speaker;
-            $sliderid= "word" . $wkey . "_speaker" . $speaker . "_slider";
-            $sliderbox_id= "word" . $wkey . "_speaker" . $speaker . "_sliderbox";
-
-            $filename = $arr['filename'];
-            $speaker = $arr['speaker'];
-
-            print "<tr class=samplerow><td>".$arr['speaker']." </td><td width=45><audio id='audio_$n' src=$filename onended='enable_playbutton_$n();' ></audio>";
-
-            print "<button type=button id='playbutton_$n' onclick='playing_$n()'> &#9658; play </button> </td>";
+    for ($foo=0;$foo<3;$foo++) {
 
 
-            $sqlcommand3 = "SELECT evaluation FROM evaluations WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
+        print "<tr><td colspan=7 bgcolor=#ffdddd align=center><b>".$tableheader[$foo]."</b></td></tr>";
+        print "<tr><td colspan=2></td><td align=center> <small>Overall quality</small></td><td align=center><small>Pronunciation variants</small></td></tr>";
+        $queryres=$queryress[$foo];
 
-            $boxstyle="activebox";
+        while ($arr = $queryres->fetcharray()) {
 
-            $def = $db->querySingle($sqlcommand3);
-            if (!$def){
-                $def = 1;
-                $boxstyle="passivebox";
-            }
+            ++$n;
+    //
+    //        if ($n < 4) {
+            if (true) {
 
+                $radioid = "word" . $wkey . "_speaker" . $speaker;
+                $sliderid= "word" . $wkey . "_speaker" . $speaker . "_slider";
+                $sliderbox_id= "word" . $wkey . "_speaker" . $speaker . "_sliderbox";
 
-            print "<td>
-                       <table class='$boxstyle' id='${sliderbox_id}'><tr>
-                       <td align=middle class='sliderbox1'>1</td>
-                       <td align=middle class='sliderbox2'>2</td>
-                       <td align=middle class='sliderbox3'>3</td>
-                       <td align=middle class='sliderbox4'>4</td>
-                       <td align=middle class='sliderbox5'>5</td></tr>";
-            print "<tr><td colspan=5><input id=$sliderid type=range list=numbers min=1 max=5 step='0.1' value=$def onclick=\"updateSlider('$sliderid', '$speaker', '${sliderbox_id}');\"/></td></tr></table>
-                       </td>
-                       </span>";
-            print "<td>
-                       ";
+                $filename = $arr['filename'];
+                $speaker = $arr['speaker'];
+
+                print "<tr class=samplerow><td>".$arr['speaker']." </td><td width=45><audio id='audio_$n' src=$filename onended='enable_playbutton_$n();' ></audio>";
+
+                print "<button type=button id='playbutton_$n' onclick='playing_$n()'> &#9658; play </button> </td>";
 
 
-            $nn = 0;
-//
+                $sqlcommand3 = "SELECT evaluation FROM evaluations WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
 
+                $boxstyle="activebox";
 
-            // Check if there's an active pronunciation for this speaker&word&listener combination:
-
-            $sqlcommand4 = "SELECT pronunc_variant FROM evaluations WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
-
-            $pronvariant=$db->querySingle($sqlcommand4);
-
-
-            foreach ($phonearrays as $arr3) {
-
-                $phonearray=$arr3['pronunc'];
-                $pronunc_id= $arr3['id'];
-
-                #print_r($phonearray);
-//                if (++$nn == 1)
-//                    $checked = "checked='checked'";
-//                else
-//                    $checked = "";
-
-                $pronboxid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id ;
-                $phoneid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id . "_ph1";
-
-
-                $nn++; // The counter is there for nice indexing;
-
-
-                if ($pronvariant == $pronunc_id) {
-                    $activeclass='activepronunciation';
-                    $active=true;
-                    $sqlcommand5 = "SELECT * FROM phone_error WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
-                    $errorarray=$db->query($sqlcommand5);
-                    $checked=' checked ';
-
-                }
-                else {
-                    $activeclass='passivepronunciation';
-                    $active=false;
-                    $checked='';
+                $def = $db->querySingle($sqlcommand3);
+                if (!$def){
+                    $def = 1;
+                    $boxstyle="passivebox";
                 }
 
 
-                print "\n<span class='$activeclass' id='${pronboxid}'>$nn";
-                print "<input type='radio' id='${pronboxid}_radio' name='${radioid}_radio' $checked";
-                print " value='${pronboxid}' onclick=\"activatepronunciation('$radioid','$phoneid','$speaker');\"/>";
-                $nnn = 0;
-                foreach ($phonearray as $phone) {
-                    $nnn++;
-                    $phoneid = $pronboxid ."_ph$nnn";
+                print "<td>
+                           <table class='$boxstyle' id='${sliderbox_id}'><tr>
+                           <td align=middle class='sliderbox1'>1</td>
+                           <td align=middle class='sliderbox2'>2</td>
+                           <td align=middle class='sliderbox3'>3</td>
+                           <td align=middle class='sliderbox4'>4</td>
+                           <td align=middle class='sliderbox5'>5</td></tr>";
+                print "<tr><td colspan=5><input id=$sliderid type=range list=numbers min=1 max=5 step='0.1' value=$def onclick=\"updateSlider('$sliderid', '$speaker', '${sliderbox_id}');\"/></td></tr></table>
+                           </td>
+                           </span>";
+                print "<td>
+                           ";
 
-                    if ($active) {
-                        $sqlcommand6 = "SELECT error_type FROM phone_error WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id' and word_phoneme='$nnn';";
-                        $errtype=$db->querySingle($sqlcommand6);
 
-                        if ($errtype==-2) {
-                            $phoneclass='realbadphone';
-                        }
-                        else if ($errtype==-1) {
-                            $phoneclass='badphone';
-                        }
-                        else {
-                            $phoneclass='goodphone';
-                        }
+                $nn = 0;
+    //
 
-                    }else {
-                        $phoneclass='passivephone';
+
+                // Check if there's an active pronunciation for this speaker&word&listener combination:
+
+                $sqlcommand4 = "SELECT pronunc_variant FROM evaluations WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
+
+                $pronvariant=$db->querySingle($sqlcommand4);
+
+
+                foreach ($phonearrays as $arr3) {
+
+                    $phonearray=$arr3['pronunc'];
+                    $pronunc_id= $arr3['id'];
+
+                    #print_r($phonearray);
+    //                if (++$nn == 1)
+    //                    $checked = "checked='checked'";
+    //                else
+    //                    $checked = "";
+
+                    $pronboxid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id ;
+                    $phoneid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id . "_ph1";
+
+
+                    $nn++; // The counter is there for nice indexing;
+
+
+                    if ($pronvariant == $pronunc_id) {
+                        $activeclass='activepronunciation';
+                        $active=true;
+                        $sqlcommand5 = "SELECT * FROM phone_error WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id';";
+                        $errorarray=$db->query($sqlcommand5);
+                        $checked=' checked ';
+
                     }
-                    print "\n<span id='$phoneid' class='$phoneclass' onclick=\"cyclecolor('$radioid','$phoneid','$speaker','$pronunc_id', '$nnn');\">" . $phonememap[$phone] . "</span>";
+                    else {
+                        $activeclass='passivepronunciation';
+                        $active=false;
+                        $checked='';
+                    }
 
+
+                    print "\n<span class='$activeclass' id='${pronboxid}'>$nn";
+                    print "<input type='radio' id='${pronboxid}_radio' name='${radioid}_radio' $checked";
+                    print " value='${pronboxid}' onclick=\"activatepronunciation('$radioid','$phoneid','$speaker');\"/>";
+                    $nnn = 0;
+                    foreach ($phonearray as $phone) {
+                        $nnn++;
+                        $phoneid = $pronboxid ."_ph$nnn";
+
+                        if ($active) {
+                            $sqlcommand6 = "SELECT error_type FROM phone_error WHERE word='$wkey' AND speaker='$speaker' and listener='$listener_id' and word_phoneme='$nnn';";
+                            $errtype=$db->querySingle($sqlcommand6);
+
+                            if ($errtype==-2) {
+                                $phoneclass='realbadphone';
+                            }
+                            else if ($errtype==-1) {
+                                $phoneclass='badphone';
+                            }
+                            else {
+                                $phoneclass='goodphone';
+                            }
+
+                        }else {
+                            $phoneclass='passivephone';
+                        }
+                        print "\n<span id='$phoneid' class='$phoneclass' onclick=\"cyclecolor('$radioid','$phoneid','$speaker','$pronunc_id', '$nnn');\">" . $phonememap[$phone] . "</span>";
+
+                    }
+
+                    print "</span>";
                 }
+    //            $nn++;
+    //            $pronunc_id= "0";
+    //
+    //            $radioid = "word" . $wkey . "_speaker" . $speaker;
+    //            $pronboxid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id ;
+    //            $phoneid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id . "_ph1";
+    //
+    //            print "\n<span class=passivepronunciation id='$pronboxid' >$nn<input type='radio' id='${pronboxid}_radio' name='${radioid}_radio'  onclick='activatepronunciation('$radioid','$phoneid')' />
+    //                    <span  id='$phoneid' class='passivephone' onclick=\"cyclecolor('$radioid','$phoneid');\">Other</span> </span>";
+    //
+    //            print "</span>";
 
-                print "</span>";
+                print "</td>";
+
+                print "</tr>";
+
+                $javascript.= "
+                    //////////// Sample $n handling /////////////////
+
+                    function playing_$n() {
+                       if (audio_$n.currentTime != 0) {
+                        audio_$n.pause();
+                        audio_$n.currentTime = 0;
+                        enable_playbutton_$n() ;
+                       }
+                       else {
+                         audio_$n.play();
+                         playbutton_$n.innerHTML=' <font color=#00cc00>&#8718; stop</font> ';
+                         playbutton_$n.disabled=false;
+                      }
+                    }
+
+                    function enable_playbutton_$n() {
+                       playbutton_$n.disabled=false;
+                       audio_$n.currentTime = 0;
+                       playbutton_$n.innerHTML='&#9658; play ';
+                    }
+
+                    ";
+
             }
-//            $nn++;
-//            $pronunc_id= "0";
-//
-//            $radioid = "word" . $wkey . "_speaker" . $speaker;
-//            $pronboxid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id ;
-//            $phoneid = "word" . $wkey . "_speaker" . $speaker . "_pr" . $pronunc_id . "_ph1";
-//
-//            print "\n<span class=passivepronunciation id='$pronboxid' >$nn<input type='radio' id='${pronboxid}_radio' name='${radioid}_radio'  onclick='activatepronunciation('$radioid','$phoneid')' />
-//                    <span  id='$phoneid' class='passivephone' onclick=\"cyclecolor('$radioid','$phoneid');\">Other</span> </span>";
-//
-//            print "</span>";
-
-            print "</td>";
-
-            print "</tr>";
-
-            $javascript.= "
-                //////////// Sample $n handling /////////////////
-
-                function playing_$n() {
-                   if (audio_$n.currentTime != 0) {
-                    audio_$n.pause();
-                    audio_$n.currentTime = 0;
-                    enable_playbutton_$n() ;
-                   }
-                   else {
-                     audio_$n.play();
-                     playbutton_$n.innerHTML=' <font color=#00cc00>&#8718; stop</font> ';
-                     playbutton_$n.disabled=false;
-                  }
-                }
-
-                function enable_playbutton_$n() {
-                   playbutton_$n.disabled=false;
-                   audio_$n.currentTime = 0;
-                   playbutton_$n.innerHTML='&#9658; play ';
-                }
-
-                ";
-
         }
     }
     $samplesonthispage = $n;
