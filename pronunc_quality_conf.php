@@ -165,40 +165,40 @@ if (!file_exists($dbfile)) {
 
 
 $speakers=Array(
-    "heiap",
-    "heiom",
-    "janap",
-    "janom",
-    "kalap",
-    "kalom",
-    "kasap",
-    "kasom",
-    "lauap",
-    "lauom",
-    "leiap",
-    "leiom",
-    "marap",
-    "marom",
-    "merap",
-    "merom",
-    "mikap",
-    "mikom",
-    "minap",
-    "minom",
-    "reiap",
-    "reiom",
-    "sepap",
-    "sepom",
-    "timap",
-    "timom",
-    "tuuap",
-    "tuuom",
-    "ullap",
-    "ullom",
-    "ulpap",
-    "ulpom",
-    "robom",
-    "petom"
+    Array ("name" =>  "heiap", "interesting" => -1),
+    Array ("name" =>  "heiom", "interesting" => -1),
+    Array ("name" =>  "janap", "interesting" => 0),
+    Array ("name" =>  "janom", "interesting" => 0),
+    Array ("name" =>  "kalap", "interesting" => 1),
+    Array ("name" =>  "kalom", "interesting" => 0),
+    Array ("name" =>  "kasap", "interesting" => 1),
+    Array ("name" =>  "kasom", "interesting" => 0),
+    Array ("name" =>  "lauap", "interesting" => -1),
+    Array ("name" =>  "lauom", "interesting" => 0),
+    Array ("name" =>  "leiap", "interesting" => 0),
+    Array ("name" =>  "leiom", "interesting" => -1),
+    Array ("name" =>  "marap", "interesting" => 1),
+    Array ("name" =>  "marom", "interesting" => 0),
+    Array ("name" =>  "merap", "interesting" => 0),
+    Array ("name" =>  "merom", "interesting" => 1),
+    Array ("name" =>  "mikap", "interesting" => -1),
+    Array ("name" =>  "mikom", "interesting" => 1),
+    Array ("name" =>  "minap", "interesting" => 0),
+    Array ("name" =>  "minom", "interesting" => 0),
+    Array ("name" =>  "reiap", "interesting" => 0),
+    Array ("name" =>  "reiom", "interesting" => -1),
+    Array ("name" =>  "sepap", "interesting" => -1),
+    Array ("name" =>  "sepom", "interesting" => 0),
+    Array ("name" =>  "timap", "interesting" => 1),
+    Array ("name" =>  "timom", "interesting" => 0),
+    Array ("name" =>  "tuuap", "interesting" => -1),
+    Array ("name" =>  "tuuom", "interesting" => 0),
+    Array ("name" =>  "ullap", "interesting" => -1),
+    Array ("name" =>  "ullom", "interesting" => 1),
+    Array ("name" =>  "ulpap", "interesting" => 0),
+    Array ("name" =>  "ulpom", "interesting" => -1),
+    Array ("name" =>  "robom", "interesting" => 1),
+    Array ("name" =>  "petom", "interesting" => 0)
 );
 
 
@@ -371,7 +371,8 @@ CREATE TABLE speakers
     name TEXT NOT NULL,
     gender TEXT,
     age TEXT,
-    language_bg TEXT
+    language_bg TEXT,
+    interesting INTEGER
 );
 CREATE TABLE speakers_words
 (
@@ -428,8 +429,8 @@ CREATE TABLE phone_error
     $pronid=0;
     $wordcount=0;
 
-    foreach ($speakers as $speaker) {
-        $sqlcommand.="INSERT INTO speakers (name) VALUES ('$speaker');\n";
+    foreach ($speakers as $speakerarr) {
+        $sqlcommand.="INSERT INTO speakers (name, interesting) VALUES ('".$speakerarr['name']."',".$speakerarr['interesting'].");\n";
         //print "<br>$sqlcommand";
         //$dbcreation = $db->exec($sqlcommand);
         //if ($dbcreation) {
@@ -441,7 +442,8 @@ CREATE TABLE phone_error
             $sqlcommand.="INSERT INTO words (word,interesting) VALUES ('".$word["word"]."',".$word["interesting"].");\n";
 
             $speakercount=0;
-            foreach ($speakers as $speaker) {
+            foreach ($speakers as $speakerarr) {
+                $speaker=$speakerarr['name'];
                 $speakercount++;
                 $wavfilename="wav/$speaker-".$word["file"].".wav";
                 #print "checking $wavfilename\n";
