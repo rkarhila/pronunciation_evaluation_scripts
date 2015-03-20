@@ -47,6 +47,7 @@ if ($listener == 1) {
 }
 else {
 
+    print "p-var: ".$pronunc_variant."<br>";
 
 // $sqlcommand="INSERT INTO phone_error (speaker, word, listener, pronunc_variant, word_phoneme, error_type, error_detail, timestamp) ";
 // $sqlcommand.=  "VALUES ('$speaker', '$word', '$listener','$pronunc_variant', '$word_phoneme', '$error_type', '$error_detail','$timestamp'); ";

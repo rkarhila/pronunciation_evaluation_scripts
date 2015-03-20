@@ -27,6 +27,8 @@ if ($listener == 1) {
     print 1;
     }
 else  {
+    print "p-var".$pronunc_variant."<br>";
+
 
     $sqlcommand ="SELECT count(*) FROM evaluations WHERE word='$word' AND listener='$listener' AND speaker='$speaker';";
     if ($db->querySingle($sqlcommand) > 0) {
