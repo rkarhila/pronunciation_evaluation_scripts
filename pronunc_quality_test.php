@@ -557,7 +557,7 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
 
                     print "\n<span class='$activeclass' id='${pronboxid}'>$nn";
                     print "<input type='radio' id='${pronboxid}_radio' name='${radioid}_radio' $checked";
-                    print " value='${pronboxid}' onclick=\"activatepronunciation('$radioid','$phoneid','$speaker');\"/>";
+                    print " value='${pronboxid}' onclick=\"activatepronunciation('$radioid','$phoneid','$speaker','$pronunc_id');\"/>";
                     $nnn = 0;
                     foreach ($phonearray as $phone) {
                         $nnn++;
@@ -797,7 +797,7 @@ var endred='</font>';";
         var xmlhttp;
         xmlhttp=new XMLHttpRequest();
 
-        xmlhttp.open('GET','${add_phone_error_url}?listener_id=${listener_id}&speaker_id='+\$speaker_id+'&word_id=${wkey}&pronunc_variant='+\$pronunc+'&word_phoneme='+\$word_phoneme+'&error_type='+\$errortype+'&error_detail='+\$errordetail, false);
+        xmlhttp.open('GET','${add_phone_error_url}?listener_id=${listener_id}&speaker_id='+\$speaker_id+'&word_id=${wkey}&pronunc='+\$pronunc+'&word_phoneme='+\$word_phoneme+'&error_type='+\$errortype+'&error_detail='+\$errordetail, false);
         xmlhttp.send();
         logthis( xmlhttp.responseText);
 
