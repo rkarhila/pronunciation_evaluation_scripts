@@ -1,19 +1,19 @@
 <?php
 
+date_default_timezone_set('Europe/Helsinki');
+
 # These are the truly local settings:
 #Include information about the URL where test is run:
 
-#$base_url="http://localhost:8008/";
-$base_url="http://spa1.org.aalto.fi/Sites/pronunciation_evaluation/";
+$base_url="http://localhost:8008/";
+
 
 # and where is the database file for the results:
-#$dbfile="/l/rkarhila/scratch/PhpstormProjects/SIAK_subjective_pronunciation_scoring_test/db/pronunc.db";
-$dbfile="/var/www/db/pronunc.db";
-
+#$dbfile="/l/rkarhila/scratch/subjective_pronunciation_scoring_test/db/pronunc2.db";
 
 # Path for saving results; Obviously read/write permissions are required for this:
 # I don't think this is used for anything at the moment?
-$resultdir="/l/rkarhila/scratch/SIAK_subjective_pronunciation_scoring_test_results/";
+$resultdir="/l/rkarhila/scratch/subjective_pronunciation_scoring_test_results/";
 
 
 # For a debug run on the command line:
@@ -91,12 +91,20 @@ $agegroups=Array(
 );
 
 $languagebackground=Array(
-    Array("val" => "Fi_US", "label" => "Native Finnish with learned American accented English"),
-    Array("val" => "Fi_UK", "label" => "Native Finnish with learned UK accented English"),
-    Array("val" => "Fi_otherEng", "label" => "Native Finnish with learned English with other accent"),
-    Array("val" => "En_US", "label" => "Native English with American accent"),
-    Array("val" => "En_UK", "label" => "Native English with UK accent"),
-    Array("val" => "En_otherEn", "label" => "Native English with other accent"),
+    Array("val" => "", "label" => "--- Teachers and language researchers ---" ),
+    Array("val" => "Fi_US", "label" => "1. Native Finnish with learned American accented English"),
+    Array("val" => "Fi_UK", "label" => "2. Native Finnish with learned UK accented English"),
+    Array("val" => "Fi_otherEng", "label" => "3. Native Finnish with learned English with other accent"),
+    Array("val" => "En_US", "label" => "4. Native English with American accent"),
+    Array("val" => "En_UK", "label" => "5. Native English with UK accent"),
+    Array("val" => "En_otherEn", "label" => "6. Native English with other accent"),
+    Array("val" => "", "label" => "--- Students and other non-experts ---" ),
+    Array("val" => "Fi_US_ama", "label" => "7. Native Finnish with American accent"),
+    Array("val" => "Fi_UK_ama", "label" => "8. Native Finnish with UK accent"),
+    Array("val" => "Fi_otherEn_ama", "label" => "9. Native Finnish with other accent"),
+    Array("val" => "En_US_ama", "label" => "10. Native English with American accent"),
+    Array("val" => "En_UK_ama", "label" => "11. Native English with UK accent"),
+    Array("val" => "En_otherEn_ama", "label" => "12. Native English with other accent"),
 );
 
 
@@ -496,6 +504,8 @@ else {
 
     $db = new SQLite3($dbfile);
     $db->exec("pragma synchronous = off;");
+
+    $db->exec("INSERT INTO foo VALUES (4);");
 
 
 }

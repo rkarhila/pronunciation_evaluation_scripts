@@ -2,6 +2,7 @@
 //error_reporting(E_ALL);
 //ini_set("display_errors", 1);
 
+
 $GLOBALS['DEBUGGING'] = False;
 
 
@@ -426,6 +427,8 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
     $phonearrays = Array();
     $pronids=Array();
 
+    $all_speakers = Array();
+
     $sqlcommand = "SELECT pronunciation FROM word_to_pronunciation WHERE word=$wkey;";
 
     $queryres = $db->query($sqlcommand);
@@ -474,12 +477,15 @@ enough the correct pronunciation, you can select <b>other</b> in the Pronunciati
     //        if ($n < 4) {
             if (true) {
 
+                $filename = $arr['filename'];
+                $speaker = $arr['speaker'];
+
+		array_push($all_speakers, $speaker);
+
                 $radioid = "word" . $wkey . "_speaker" . $speaker;
                 $sliderid= "word" . $wkey . "_speaker" . $speaker . "_slider";
                 $sliderbox_id= "word" . $wkey . "_speaker" . $speaker . "_sliderbox";
 
-                $filename = $arr['filename'];
-                $speaker = $arr['speaker'];
 
                 print "<tr class=samplerow><td>".$arr['speaker']." </td><td width=45><audio id='audio_$n' src=$filename onended='enable_playbutton_$n();' ></audio>";
 
@@ -812,7 +818,7 @@ var endred='</font>';";
 function disable_playbuttons() {
 ";
     $n = 0;
-    foreach ($speakers as $foo) {
+    foreach ($all_speakers as $foo) {
         $n++;
         print "
         playbutton_$n.disabled=true;";
